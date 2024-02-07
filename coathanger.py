@@ -3,6 +3,7 @@ import paramiko
 import sys
 import time
 import getpass
+from datetime import datetime
 
 if len(sys.argv) < 2:
     print('USAGE: HOST USERNAME')
@@ -47,29 +48,41 @@ except paramiko.SSHException:
     print('Unknown SSH error! Exiting.')
     sys.exit(),
 
-# print('Setting context to Global')
-# channel.send(str.encode('config global\n'))
-# while not channel.recv_ready():
-#     time.sleep(2)
-# output = channel.recv(9999)
-# print(output.decode())
-
-print('Getting PIDs from https.')
-channel.send(str.encode('diagnose sys process pidof httpsd\n'))
+# Uncomment in case of VDOMs
+print('Setting context to Global')
+channel.send(str.encode('config global\n'))
 while not channel.recv_ready():
     time.sleep(2)
 output = channel.recv(9999)
 print(output.decode())
 
+current_datetime = datetime.now()
+formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
+log_file = HOST + "-" + formatted_datetime + ".log"
+file = open(log_file, "w")
+
+print('Getting PIDs from https.')
+file.write('Getting PIDs from https.')
+
+channel.send(str.encode('diagnose sys process pidof httpsd\n'))
+while not channel.recv_ready():
+    time.sleep(2)
+output = channel.recv(9999)
+print(output.decode())
+file.write(output.decode())
+
 PIDs = output.decode().split('\n')
 for PID in PIDs[1:-2]:
     myPID = str(PID).rstrip("\r")
     print('Getting GID for PID:' + myPID)
+    file.write('Getting GID for PID:' + myPID)
     command = 'diagnose sys process dump ' + myPID + ' | grep Gid\n'
     channel.send(str.encode(command))
     while not channel.recv_ready():
         time.sleep(2)
     output = channel.recv(9999)
     print(output.decode())
+    file.write(output.decode())
 
+file.close()
 channel.close()
