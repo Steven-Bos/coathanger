@@ -49,12 +49,12 @@ except paramiko.SSHException:
     sys.exit(),
 
 # Uncomment in case of VDOMs
-print('Setting context to Global')
-channel.send(str.encode('config global\n'))
-while not channel.recv_ready():
-    time.sleep(2)
-output = channel.recv(9999)
-print(output.decode())
+# print('Setting context to Global')
+# channel.send(str.encode('config global\n'))
+# while not channel.recv_ready():
+#     time.sleep(2)
+# output = channel.recv(9999)
+# print(output.decode())
 
 current_datetime = datetime.now()
 formatted_datetime = current_datetime.strftime("%Y%m%d%H%M%S")
